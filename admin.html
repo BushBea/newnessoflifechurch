@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard | Newness of Life Church</title>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+
+  <main>
+    <section class="section" style="padding-top:44px;">
+      <div class="container">
+        <div id="gate" class="empty-state">Checking your session&hellip;</div>
+
+        <div class="dash-shell" id="dashShell" style="display:none;">
+          <aside class="dash-side">
+            <p class="who" id="whoName">—</p>
+            <p class="role">Admin</p>
+            <nav>
+              <a href="#overview" class="tab-link active" data-tab="overview">Overview</a>
+              <a href="#sermons" class="tab-link" data-tab="sermons">Sermons</a>
+              <a href="#events" class="tab-link" data-tab="events">Events</a>
+              <a href="#pledges" class="tab-link" data-tab="pledges">Giving / pledges</a>
+              <a href="#members" class="tab-link" data-tab="members">Members</a>
+            </nav>
+          </aside>
+
+          <div>
+            <section class="dash-panel active" id="panel-overview">
+              <div class="dash-panel-head"><h2 class="mb-0">Overview</h2></div>
+              <div class="stat-row">
+                <div class="stat"><span class="num" id="statSermons">–</span><div class="label">Sermons posted</div></div>
+                <div class="stat"><span class="num" id="statEvents">–</span><div class="label">Upcoming events</div></div>
+                <div class="stat"><span class="num" id="statMembers">–</span><div class="label">Registered members</div></div>
+              </div>
+              <div class="form-card">
+                <h3 class="mt-0">Recent pledges</h3>
+                <div class="table-wrap">
+                  <table>
+                    <thead><tr><th>Name</th><th>Amount</th><th>Date</th></tr></thead>
+                    <tbody id="overviewPledgeRows"><tr><td colspan="3">Loading&hellip;</td></tr></tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <section class="dash-panel" id="panel-sermons">
+              <div class="dash-panel-head">
+                <h2 class="mb-0">Sermons</h2>
+                <button class="btn small" id="addSermonBtn" type="button">Add sermon</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Title</th><th>Speaker</th><th>Duration</th><th>Posted</th><th></th></tr></thead>
+                  <tbody id="sermonRows"><tr><td colspan="5">Loading&hellip;</td></tr></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="dash-panel" id="panel-events">
+              <div class="dash-panel-head">
+                <h2 class="mb-0">Events</h2>
+                <button class="btn small" id="addEventBtn" type="button">Add event</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Title</th><th>Date</th><th>Time</th><th></th></tr></thead>
+                  <tbody id="eventRows"><tr><td colspan="4">Loading&hellip;</td></tr></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="dash-panel" id="panel-pledges">
+              <div class="dash-panel-head"><h2 class="mb-0">Giving / pledges</h2></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Name</th><th>Email</th><th>Amount</th><th>Message</th><th>Date</th></tr></thead>
+                  <tbody id="pledgeRows"><tr><td colspan="5">Loading&hellip;</td></tr></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="dash-panel" id="panel-members">
+              <div class="dash-panel-head"><h2 class="mb-0">Members</h2></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr></thead>
+                  <tbody id="memberRows"><tr><td colspan="4">Loading&hellip;</td></tr></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <!-- Sermon modal -->
+  <div class="modal-backdrop" id="sermonModalBackdrop">
+    <div class="modal">
+      <button class="modal-close" data-close="sermon" aria-label="Close">&times;</button>
+      <h3 id="sermonModalTitle">Add sermon</h3>
+      <div class="form-msg" id="sermonMsg"></div>
+      <form id="sermonForm">
+        <input type="hidden" name="id">
+        <div class="field"><label>Title</label><input name="title" required></div>
+        <div class="form-row">
+          <div class="field"><label>Speaker</label><input name="speaker" required></div>
+          <div class="field"><label>Duration</label><input name="duration" placeholder="e.g. 32m"></div>
+        </div>
+        <div class="field"><label>Video URL</label><input name="video_url" type="url" placeholder="https://youtube.com/..."></div>
+        <div class="field"><label>Thumbnail URL</label><input name="thumbnail" type="url" placeholder="images/sermon.jpg or a full URL"></div>
+        <div class="field"><label>Description</label><textarea name="description" rows="3"></textarea></div>
+        <button class="btn block" type="submit">Save sermon</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Event modal -->
+  <div class="modal-backdrop" id="eventModalBackdrop">
+    <div class="modal">
+      <button class="modal-close" data-close="event" aria-label="Close">&times;</button>
+      <h3 id="eventModalTitle">Add event</h3>
+      <div class="form-msg" id="eventMsg"></div>
+      <form id="eventForm">
+        <input type="hidden" name="id">
+        <div class="field"><label>Title</label><input name="title" required></div>
+        <div class="form-row">
+          <div class="field"><label>Date</label><input name="event_date" type="date" required></div>
+          <div class="field"><label>Time</label><input name="event_time" placeholder="e.g. 6:30 PM"></div>
+        </div>
+        <div class="field"><label>Description</label><textarea name="description" rows="3"></textarea></div>
+        <button class="btn block" type="submit">Save event</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    function switchTab(name) {
+      document.querySelectorAll('.tab-link').forEach(a => a.classList.toggle('active', a.dataset.tab === name));
+      document.querySelectorAll('.dash-panel').forEach(p => p.classList.toggle('active', p.id === `panel-${name}`));
+    }
+    document.querySelectorAll('.tab-link').forEach(a => {
+      a.addEventListener('click', (e) => { e.preventDefault(); switchTab(a.dataset.tab); });
+    });
+
+    function openModal(name) { document.getElementById(`${name}ModalBackdrop`).classList.add('open'); }
+    function closeModal(name) { document.getElementById(`${name}ModalBackdrop`).classList.remove('open'); }
+    document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
+
+    let allSermons = [];
+    let allEvents = [];
+
+    async function refreshSermons() {
+      const { sermons } = await api.sermons();
+      allSermons = sermons;
+      document.getElementById('statSermons').textContent = sermons.length;
+      const tbody = document.getElementById('sermonRows');
+      tbody.innerHTML = sermons.length ? sermons.map(s => `
+        <tr>
+          <td>${escapeHtml(s.title)}</td>
+          <td>${escapeHtml(s.speaker)}</td>
+          <td>${escapeHtml(s.duration || '—')}</td>
+          <td>${new Date(s.created_at).toLocaleDateString()}</td>
+          <td>
+            <button class="btn ghost small" data-edit-sermon="${s.id}" type="button">Edit</button>
+            <button class="btn danger small" data-del-sermon="${s.id}" type="button">Delete</button>
+          </td>
+        </tr>`).join('') : '<tr><td colspan="5">No sermons yet.</td></tr>';
+
+      tbody.querySelectorAll('[data-edit-sermon]').forEach(b => b.addEventListener('click', () => editSermon(b.dataset.editSermon)));
+      tbody.querySelectorAll('[data-del-sermon]').forEach(b => b.addEventListener('click', () => deleteSermon(b.dataset.delSermon)));
+    }
+
+    async function refreshEvents() {
+      const { events } = await api.events();
+      allEvents = events;
+      const upcoming = events.filter(ev => ev.event_date >= new Date().toISOString().slice(0,10));
+      document.getElementById('statEvents').textContent = upcoming.length;
+      const sorted = [...events].sort((a, b) => a.event_date.localeCompare(b.event_date));
+      const tbody = document.getElementById('eventRows');
+      tbody.innerHTML = sorted.length ? sorted.map(ev => `
+        <tr>
+          <td>${escapeHtml(ev.title)}</td>
+          <td>${ev.event_date}</td>
+          <td>${escapeHtml(ev.event_time || '—')}</td>
+          <td>
+            <button class="btn ghost small" data-edit-event="${ev.id}" type="button">Edit</button>
+            <button class="btn danger small" data-del-event="${ev.id}" type="button">Delete</button>
+          </td>
+        </tr>`).join('') : '<tr><td colspan="4">No events yet.</td></tr>';
+
+      tbody.querySelectorAll('[data-edit-event]').forEach(b => b.addEventListener('click', () => editEvent(b.dataset.editEvent)));
+      tbody.querySelectorAll('[data-del-event]').forEach(b => b.addEventListener('click', () => deleteEvent(b.dataset.delEvent)));
+    }
+
+    async function refreshPledges() {
+      const { pledges } = await api.get('/pledges');
+      const tbody = document.getElementById('pledgeRows');
+      tbody.innerHTML = pledges.length ? pledges.map(p => `
+        <tr>
+          <td>${escapeHtml(p.name)}</td>
+          <td>${escapeHtml(p.email)}</td>
+          <td>${p.amount === 'other' ? 'Other' : 'R' + escapeHtml(p.amount)}</td>
+          <td>${escapeHtml(p.message || '—')}</td>
+          <td>${new Date(p.created_at).toLocaleDateString()}</td>
+        </tr>`).join('') : '<tr><td colspan="5">No pledges yet.</td></tr>';
+
+      const ov = document.getElementById('overviewPledgeRows');
+      const recent = pledges.slice(0, 5);
+      ov.innerHTML = recent.length ? recent.map(p => `
+        <tr><td>${escapeHtml(p.name)}</td><td>${p.amount === 'other' ? 'Other' : 'R' + escapeHtml(p.amount)}</td><td>${new Date(p.created_at).toLocaleDateString()}</td></tr>
+      `).join('') : '<tr><td colspan="3">No pledges yet.</td></tr>';
+    }
+
+    async function refreshMembers() {
+      const { users } = await api.get('/users');
+      document.getElementById('statMembers').textContent = users.filter(u => u.role === 'member').length;
+      const tbody = document.getElementById('memberRows');
+      tbody.innerHTML = users.length ? users.map(u => `
+        <tr>
+          <td>${escapeHtml(u.name)}</td>
+          <td>${escapeHtml(u.email)}</td>
+          <td><span class="badge ${u.role}">${u.role}</span></td>
+          <td>${new Date(u.created_at).toLocaleDateString()}</td>
+        </tr>`).join('') : '<tr><td colspan="4">No members yet.</td></tr>';
+    }
+
+    // ---- Sermon modal wiring ----
+    document.getElementById('addSermonBtn').addEventListener('click', () => {
+      document.getElementById('sermonForm').reset();
+      document.getElementById('sermonForm').id.value = '';
+      document.getElementById('sermonModalTitle').textContent = 'Add sermon';
+      clearFormMsg(document.getElementById('sermonMsg'));
+      openModal('sermon');
+    });
+
+    function editSermon(id) {
+      const s = allSermons.find(x => String(x.id) === String(id));
+      if (!s) return;
+      const f = document.getElementById('sermonForm');
+      f.id.value = s.id; f.title.value = s.title; f.speaker.value = s.speaker;
+      f.duration.value = s.duration || ''; f.video_url.value = s.video_url || '';
+      f.thumbnail.value = s.thumbnail || ''; f.description.value = s.description || '';
+      document.getElementById('sermonModalTitle').textContent = 'Edit sermon';
+      clearFormMsg(document.getElementById('sermonMsg'));
+      openModal('sermon');
+    }
+
+    async function deleteSermon(id) {
+      if (!confirm('Delete this sermon?')) return;
+      try { await api.del(`/sermons/${id}`); await refreshSermons(); } catch (e) { alert(e.message); }
+    }
+
+    document.getElementById('sermonForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const msg = document.getElementById('sermonMsg');
+      const payload = {
+        title: f.title.value.trim(), speaker: f.speaker.value.trim(),
+        duration: f.duration.value.trim(), video_url: f.video_url.value.trim(),
+        thumbnail: f.thumbnail.value.trim(), description: f.description.value.trim(),
+      };
+      try {
+        if (f.id.value) await api.put(`/sermons/${f.id.value}`, payload);
+        else await api.post('/sermons', payload);
+        closeModal('sermon');
+        await refreshSermons();
+      } catch (err) { showFormMsg(msg, err.message, 'error'); }
+    });
+
+    // ---- Event modal wiring ----
+    document.getElementById('addEventBtn').addEventListener('click', () => {
+      document.getElementById('eventForm').reset();
+      document.getElementById('eventForm').id.value = '';
+      document.getElementById('eventModalTitle').textContent = 'Add event';
+      clearFormMsg(document.getElementById('eventMsg'));
+      openModal('event');
+    });
+
+    function editEvent(id) {
+      const ev = allEvents.find(x => String(x.id) === String(id));
+      if (!ev) return;
+      const f = document.getElementById('eventForm');
+      f.id.value = ev.id; f.title.value = ev.title; f.event_date.value = ev.event_date;
+      f.event_time.value = ev.event_time || ''; f.description.value = ev.description || '';
+      document.getElementById('eventModalTitle').textContent = 'Edit event';
+      clearFormMsg(document.getElementById('eventMsg'));
+      openModal('event');
+    }
+
+    async function deleteEvent(id) {
+      if (!confirm('Delete this event?')) return;
+      try { await api.del(`/events/${id}`); await refreshEvents(); } catch (e) { alert(e.message); }
+    }
+
+    document.getElementById('eventForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const msg = document.getElementById('eventMsg');
+      const payload = {
+        title: f.title.value.trim(), event_date: f.event_date.value,
+        event_time: f.event_time.value.trim(), description: f.description.value.trim(),
+      };
+      try {
+        if (f.id.value) await api.put(`/events/${f.id.value}`, payload);
+        else await api.post('/events', payload);
+        closeModal('event');
+        await refreshEvents();
+      } catch (err) { showFormMsg(msg, err.message, 'error'); }
+    });
+
+    document.addEventListener('layout:ready', (e) => {
+      const user = e.detail.user;
+      const gate = document.getElementById('gate');
+      if (!user) {
+        gate.textContent = 'You need to log in to view this page.';
+        setTimeout(() => window.location.href = 'login.html', 900);
+        return;
+      }
+      if (user.role !== 'admin') {
+        gate.textContent = "This dashboard is for admins only — redirecting you to your account.";
+        setTimeout(() => window.location.href = 'account.html', 900);
+        return;
+      }
+      gate.style.display = 'none';
+      document.getElementById('dashShell').style.display = 'grid';
+      document.getElementById('whoName').textContent = user.name || user.email;
+
+      refreshSermons();
+      refreshEvents();
+      refreshPledges();
+      refreshMembers();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Log In | Newness of Life Church</title>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+
+  <main>
+    <section class="section" style="padding-top:56px;">
+      <div class="container">
+        <div class="form-card narrow">
+          <h1 class="center" style="font-size:28px">Welcome back</h1>
+          <p class="center text-muted" style="margin-bottom:22px">Log in to view your dashboard.</p>
+          <div class="form-msg" id="loginMsg"></div>
+          <form id="loginForm">
+            <div class="field">
+              <label for="email">Email address</label>
+              <input id="email" name="email" type="email" autocomplete="email" required>
+            </div>
+            <div class="field">
+              <label for="password">Password</label>
+              <input id="password" name="password" type="password" autocomplete="current-password" required>
+            </div>
+            <button class="btn block" type="submit" id="loginSubmit">Log in</button>
+          </form>
+          <p class="center text-muted" style="margin-top:18px">Don't have an account? <a href="register.html" style="color:var(--sage-deep);font-weight:600">Create one</a></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const form = document.getElementById('loginForm');
+    const msg = document.getElementById('loginMsg');
+    const submitBtn = document.getElementById('loginSubmit');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearFormMsg(msg);
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Logging in…';
+      try {
+        const { user } = await api.login(form.email.value.trim(), form.password.value);
+        window.location.href = user.role === 'admin' ? 'admin.html' : 'account.html';
+      } catch (err) {
+        showFormMsg(msg, err.message || 'Could not log in. Check your details and try again.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Log in';
+      }
+    });
+
+    // If already logged in, skip straight to the right dashboard.
+    document.addEventListener('layout:ready', (e) => {
+      const user = e.detail.user;
+      if (user) window.location.href = user.role === 'admin' ? 'admin.html' : 'account.html';
+    });
+  </script>
+</body>
+</html>

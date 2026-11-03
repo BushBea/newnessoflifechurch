@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>My Account | Newness of Life Church</title>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+
+  <main>
+    <section class="section" style="padding-top:44px;">
+      <div class="container">
+        <div id="gate" class="empty-state">Checking your session&hellip;</div>
+
+        <div class="dash-shell" id="dashShell" style="display:none;">
+          <aside class="dash-side">
+            <p class="who" id="whoName">—</p>
+            <p class="role">Member</p>
+            <nav>
+              <a href="#profile" class="tab-link active" data-tab="profile">Profile</a>
+              <a href="#giving" class="tab-link" data-tab="giving">My giving</a>
+              <a href="#events" class="tab-link" data-tab="events">Upcoming events</a>
+            </nav>
+          </aside>
+
+          <div>
+            <section class="dash-panel active" id="panel-profile">
+              <div class="dash-panel-head"><h2 class="mb-0">Your profile</h2></div>
+              <div class="form-card">
+                <p><strong>Name:</strong> <span id="profName"></span></p>
+                <p><strong>Email:</strong> <span id="profEmail"></span></p>
+                <p class="mb-0"><strong>Member since:</strong> <span id="profSince"></span></p>
+              </div>
+            </section>
+
+            <section class="dash-panel" id="panel-giving">
+              <div class="dash-panel-head"><h2 class="mb-0">Your giving history</h2></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Date</th><th>Amount</th><th>Message</th></tr></thead>
+                  <tbody id="givingRows"><tr><td colspan="3">Loading&hellip;</td></tr></tbody>
+                </table>
+              </div>
+              <p style="margin-top:16px"><a class="btn small" href="give.html">Make a new pledge</a></p>
+            </section>
+
+            <section class="dash-panel" id="panel-events">
+              <div class="dash-panel-head"><h2 class="mb-0">Upcoming events</h2></div>
+              <div id="memberEvents"><div class="empty-state">Loading&hellip;</div></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    function switchTab(name) {
+      document.querySelectorAll('.tab-link').forEach(a => a.classList.toggle('active', a.dataset.tab === name));
+      document.querySelectorAll('.dash-panel').forEach(p => p.classList.toggle('active', p.id === `panel-${name}`));
+    }
+    document.querySelectorAll('.tab-link').forEach(a => {
+      a.addEventListener('click', (e) => { e.preventDefault(); switchTab(a.dataset.tab); });
+    });
+
+    async function loadGiving() {
+      const tbody = document.getElementById('givingRows');
+      try {
+        const { pledges } = await api.get('/pledges/mine');
+        if (!pledges.length) { tbody.innerHTML = '<tr><td colspan="3">No pledges yet.</td></tr>'; return; }
+        tbody.innerHTML = pledges.map(p => `
+          <tr>
+            <td>${new Date(p.created_at).toLocaleDateString()}</td>
+            <td>${p.amount === 'other' ? 'Other' : 'R' + escapeHtml(p.amount)}</td>
+            <td>${escapeHtml(p.message || '—')}</td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="3">Could not load your giving history.</td></tr>';
+      }
+    }
+
+    async function loadMemberEvents() {
+      const el = document.getElementById('memberEvents');
+      try {
+        const { events } = await api.events();
+        if (!events.length) { el.innerHTML = '<div class="empty-state">No events scheduled.</div>'; return; }
+        const sorted = [...events].sort((a, b) => a.event_date.localeCompare(b.event_date));
+        el.innerHTML = `<div class="timeline">` + sorted.map(ev => {
+          const d = formatEventDate(ev.event_date);
+          return `
+          <div class="timeline-item">
+            <div class="timeline-date"><span class="day">${d.day}</span><span class="mon">${d.mon}</span></div>
+            <div class="timeline-content">
+              <h3>${escapeHtml(ev.title)}</h3>
+              <p class="when">${d.full || ''}${ev.event_time ? ' &middot; ' + escapeHtml(ev.event_time) : ''}</p>
+              <p>${escapeHtml(ev.description || '')}</p>
+            </div>
+          </div>`;
+        }).join('') + `</div>`;
+      } catch (e) {
+        el.innerHTML = '<div class="empty-state">Could not load events.</div>';
+      }
+    }
+
+    document.addEventListener('layout:ready', (e) => {
+      const user = e.detail.user;
+      const gate = document.getElementById('gate');
+      if (!user) {
+        gate.textContent = 'You need to log in to view your account.';
+        setTimeout(() => window.location.href = 'login.html', 900);
+        return;
+      }
+      if (user.role === 'admin') { window.location.href = 'admin.html'; return; }
+
+      gate.style.display = 'none';
+      document.getElementById('dashShell').style.display = 'grid';
+      document.getElementById('whoName').textContent = user.name || user.email;
+      document.getElementById('profName').textContent = user.name || '—';
+      document.getElementById('profEmail').textContent = user.email;
+      document.getElementById('profSince').textContent = user.created_at ? new Date(user.created_at).toLocaleDateString() : '—';
+
+      loadGiving();
+      loadMemberEvents();
+    });
+  </script>
+</body>
+</html>

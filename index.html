@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Newness of Life Church — Akasia, Pretoria</title>
+  <meta name="description" content="Newness of Life Church in Akasia, Pretoria. Join us Sundays for worship, watch recent sermons online, find upcoming events, and connect with our community." />
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero-left">
+          <p class="hero-eyebrow">You're welcome here</p>
+          <h1>A place to belong, grow, and find newness of life</h1>
+          <p class="lead">Join us in person on Sundays in Akasia, or watch online from anywhere. Real teaching, real community, and practical steps to take next.</p>
+          <div class="hero-ctas">
+            <a class="btn" href="https://www.youtube.com/@nkosinathirhulani195" target="_blank" rel="noopener noreferrer">Watch a service</a>
+            <a class="btn outline" href="https://www.google.com/maps/search/?api=1&query=507+Steel+Blue+Street,+Witfontein+301,+Akasia,+South+Africa" target="_blank" rel="noopener noreferrer">Plan a visit</a>
+          </div>
+        </div>
+        <a class="hero-figure" href="https://www.youtube.com/@nkosinathirhulani195" target="_blank" rel="noopener noreferrer">
+          <img src="images/hero.jpg" alt="Congregation worshipping at Newness of Life Church">
+          <div class="tag">
+            <strong>Sunday Service — 9:00 AM</strong>
+            <span>Pastor Nkosinathi Rhulani &middot; in person &amp; online</span>
+          </div>
+        </a>
+      </div>
+      <svg class="hero-wave" viewBox="0 0 1440 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,40 C240,90 480,0 720,30 C960,60 1200,10 1440,45 L1440,80 L0,80 Z" fill="#faf6ee"></path>
+      </svg>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="feature-row">
+          <div class="feature">
+            <p class="kicker">Watch</p>
+            <h3>Catch the latest message</h3>
+            <p>Stream recent sermons with sound teaching you can revisit any time during the week.</p>
+          </div>
+          <div class="feature">
+            <p class="kicker">Belong</p>
+            <h3>Join a small group</h3>
+            <p>Connect with people nearby to grow in faith together, ask questions, and share life.</p>
+          </div>
+          <div class="feature">
+            <p class="kicker">Serve</p>
+            <h3>Use your gifts</h3>
+            <p>There's a team for you — from welcoming guests to worship to serving our neighbours.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section alt" id="sermons">
+      <div class="container">
+        <div class="section-head">
+          <h2>Recent sermons</h2>
+          <a class="link" href="sermons.html">View all sermons</a>
+        </div>
+        <div class="card-grid" id="homeSermons">
+          <div class="empty-state">Loading recent sermons&hellip;</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="events">
+      <div class="container">
+        <div class="section-head">
+          <h2>What's coming up</h2>
+          <a class="link" href="events.html">See all events</a>
+        </div>
+        <div id="featuredEvent"></div>
+        <div id="homeEvents">
+          <div class="empty-state">Loading upcoming events&hellip;</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark">
+      <div class="container center max-prose">
+        <h2>Ready to take your next step?</h2>
+        <p>Whether it's your first visit or you've been part of this family for years, there's a place for you at Newness of Life.</p>
+        <div class="hero-ctas" style="justify-content:center">
+          <a class="btn" href="give.html">Give online</a>
+          <a class="btn outline" href="register.html">Create an account</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/featured-event.js"></script>
+  <script>
+    document.getElementById('featuredEvent').innerHTML = renderPrayerGathering();
+
+    async function loadHomeSermons() {
+      const el = document.getElementById('homeSermons');
+      try {
+        const { sermons } = await api.sermons();
+        const recent = sermons.slice(0, 3);
+        if (!recent.length) { el.innerHTML = '<div class="empty-state">No sermons posted yet — check back soon.</div>'; return; }
+        el.innerHTML = recent.map(s => `
+          <article class="media-card">
+            <a class="thumb" href="${s.video_url || '#'}" target="_blank" rel="noopener noreferrer">
+              <img src="${s.thumbnail || 'images/sermon.jpg'}" alt="${escapeHtml(s.title)}">
+              <div class="play"><i class="fas fa-play"></i></div>
+            </a>
+            <div class="body">
+              <h3>${escapeHtml(s.title)}</h3>
+              <p class="meta">${escapeHtml(s.speaker)} &middot; ${escapeHtml(s.duration || '')}</p>
+            </div>
+          </article>
+        `).join('');
+      } catch (e) {
+        el.innerHTML = '<div class="empty-state">Sermons will appear here once the site is connected to its backend.</div>';
+      }
+    }
+
+    async function loadHomeEvents() {
+      const el = document.getElementById('homeEvents');
+      try {
+        const { events } = await api.events();
+        const upcoming = events.slice(0, 2);
+        if (!upcoming.length) { el.innerHTML = '<div class="empty-state">No events scheduled yet — check back soon.</div>'; return; }
+        el.innerHTML = `<div class="timeline">` + upcoming.map(ev => {
+          const d = formatEventDate(ev.event_date);
+          return `
+          <div class="timeline-item">
+            <div class="timeline-date"><span class="day">${d.day}</span><span class="mon">${d.mon}</span></div>
+            <div class="timeline-content">
+              <h3>${escapeHtml(ev.title)}</h3>
+              <p class="when">${d.full || ''}${ev.event_time ? ' &middot; ' + escapeHtml(ev.event_time) : ''}</p>
+              <p>${escapeHtml(ev.description || '')}</p>
+            </div>
+          </div>`;
+        }).join('') + `</div>`;
+      } catch (e) {
+        el.innerHTML = '<div class="empty-state">Events will appear here once the site is connected to its backend.</div>';
+      }
+    }
+
+    loadHomeSermons();
+    loadHomeEvents();
+  </script>
+</body>
+</html>
